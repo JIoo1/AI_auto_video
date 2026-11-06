@@ -216,9 +216,26 @@ Pipeline chạy 8 bước, lần nào cũng như lần nấy — code ở [`src/
 ```env
 TTS_PROVIDER=omnivoice
 OMNIVOICE_ENDPOINT=http://127.0.0.1:8123
+OMNIVOICE_VOICE_GENDER=male
+OMNIVOICE_SPEAKING_STYLE=narrator
+OMNIVOICE_REFERENCE_AUDIO=assets/voice-reference/vietnamese-male-middle-audio-019.wav
+OMNIVOICE_REFERENCE_TEXT=Xin chào, mình là Thế Hào. Rất vui vì hôm nay chúng ta lại có dịp ngồi lại với nhau. Trong không gian nhỏ bé, nhưng đầy yêu thương.
+# Chỉ tăng lên 2 nếu máy còn đủ RAM/VRAM
+TTS_CONCURRENCY=1
 ```
 
-Server chỉ cần nhận `POST /tts` kèm `{ text }` và trả về bytes `audio/mpeg` là đủ.
+Server nhận `POST /generate` với file WAV mẫu, transcript, nội dung cần đọc,
+`voice_gender` và `speaking_style`, rồi trả về WAV. Mặc định pipeline dùng cùng một
+giọng nam mẫu và phong cách thuyết minh cho toàn bộ cảnh.
+
+Pipeline lưu `.pipeline-cache.json` trong thư mục output. Cache được kiểm tra bằng
+hash của lời thoại, voice reference, cấu hình TTS, template và inputs. Vì vậy khi
+chỉ sửa một cảnh, các cảnh không liên quan không bị gọi TTS hoặc render lại. Xóa
+file cache nếu muốn buộc kiểm tra lại toàn bộ cache.
+
+Cache cũng lưu voice tổng hợp và video cuối. Khi không có thay đổi, pipeline chỉ
+kiểm tra output thay vì ghép audio và mux video lại. Cuối pipeline sẽ in thời gian
+TTS, mix audio, render clip và mux để dễ xác định bước đang chậm.
 
 </details>
 

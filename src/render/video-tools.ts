@@ -1,7 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
-import { tmpdir } from "node:os";
+import { resolve } from "node:path";
 import { getDurationSec } from "../assets/audio-tools.js";
 
 function run(cmd: string, args: string[]): Promise<string> {
@@ -50,22 +48,21 @@ export async function fitClipToDuration(
   await run("ffmpeg", args);
 }
 
-/** Concatenate uniformly-encoded clips into one silent video (stream copy). */
+/** Concatenate clips into one continuous silent video with fresh timestamps. */
 export async function concatVideos(clipPaths: string[], outPath: string): Promise<void> {
   if (clipPaths.length === 0) throw new Error("concatVideos: empty clipPaths");
-  const tmp = await mkdtemp(join(tmpdir(), "vconcat-"));
-  try {
-    const listFile = join(tmp, "list.txt");
-    // Absolute paths: the concat demuxer resolves `file '...'` relative to the
-    // list file's directory (the temp dir), not the process cwd.
-    const body = clipPaths
-      .map((p) => `file '${resolve(p).replace(/'/g, "'\\''")}'`)
-      .join("\n");
-    await writeFile(listFile, body, "utf8");
-    await run("ffmpeg", ["-y", "-f", "concat", "-safe", "0", "-i", listFile, "-c", "copy", outPath]);
-  } finally {
-    await rm(tmp, { recursive: true, force: true });
-  }
+  const inputs = clipPaths.flatMap((p) => ["-i", resolve(p)]);
+  const labels = clipPaths.map((_, i) => `[${i}:v:0]`).join("");
+  const filter = `${labels}concat=n=${clipPaths.length}:v=1:a=0[v]`;
+  await run("ffmpeg", [
+    "-y",
+    ...inputs,
+    "-filter_complex", filter,
+    "-map", "[v]",
+    ...ENCODE(30),
+    "-movflags", "+faststart",
+    outPath,
+  ]);
 }
 
 /**
@@ -84,8 +81,12 @@ export async function muxAudioOntoVideo(
     "-map", "0:v:0",
     "-map", "1:a:0",
     "-c:v", "copy",
+    "-af", "aresample=async=1:first_pts=0",
     "-c:a", "aac",
     "-b:a", "192k",
+    "-disposition:a:0", "default",
+    "-metadata:s:a:0", "language=vie",
+    "-movflags", "+faststart",
     outPath,
   ]);
 }

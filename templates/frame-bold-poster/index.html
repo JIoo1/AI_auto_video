@@ -52,15 +52,15 @@
   @keyframes figureIn { to { opacity: 1; transform: translateY(0) rotate(-6deg); } }
 
   /* three-line headline, each line its own tilt, rising in sequence */
-  .head { position: absolute; left: 110px; bottom: 300px; font-family: 'Alfa Slab One', cursive;
-    line-height: 0.92; }
+  .head { position: absolute; left: 110px; right: 110px; bottom: 300px;
+    font-family: 'Alfa Slab One', cursive; line-height: 0.92; text-align: center; }
   .head .ln { display: block; font-size: 132px; opacity: 0; transform: translateY(40px); }
-  .head .ln1 { color: #1C1410; transform-origin: left bottom; animation: lineUp 0.7s cubic-bezier(0.16,1,0.3,1) 1.15s forwards; }
+  .head .ln1 { color: #1C1410; animation: lineUp 0.7s cubic-bezier(0.16,1,0.3,1) 1.15s forwards; }
   .head .ln2 { color: #D8000F; animation: lineUpTilt 0.7s cubic-bezier(0.16,1,0.3,1) 1.35s forwards; }
   .head .ln3 { color: #1C1410; animation: lineUpTilt2 0.7s cubic-bezier(0.16,1,0.3,1) 1.55s forwards; }
-  @keyframes lineUp { to { opacity: 1; transform: translateY(0) rotate(-2deg); } }
-  @keyframes lineUpTilt { to { opacity: 1; transform: translateY(0) rotate(-4deg); } }
-  @keyframes lineUpTilt2 { to { opacity: 1; transform: translateY(0) rotate(2deg); } }
+  @keyframes lineUp { to { opacity: 1; transform: translateY(0); } }
+  @keyframes lineUpTilt { to { opacity: 1; transform: translateY(0); } }
+  @keyframes lineUpTilt2 { to { opacity: 1; transform: translateY(0); } }
 
   /* serif standfirst */
   .standfirst { position: absolute; left: 114px; bottom: 170px; max-width: 980px;
@@ -130,14 +130,16 @@
         var el = document.querySelector(sel);
         if (el && text != null) el.textContent = String(text);
       };
-      var head = Array.isArray(v.headline) ? v.headline : [];
+      var head = Array.isArray(v.headline)
+        ? v.headline
+        : (v.headline != null ? [v.headline] : []);
       set(".kicker .label", v.kicker);
       set(".kicker .date", v.date);
       set(".figure", v.figure);
       set(".head .ln1", head[0]);
       set(".head .ln2", head[1]);
       set(".head .ln3", head[2]);
-      set(".standfirst", v.standfirst);
+      set(".standfirst", v.standfirst != null ? v.standfirst : v.subtitle);
       set(".footer .meta-left", v.footer_left);
       set(".footer .meta-right", v.footer_right);
     })();

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { resolve } from "node:path";
 
 export type TtsProvider = "omnivoice";
 
@@ -7,6 +8,10 @@ export interface Config {
 
     // OmniVoice (local TTS server)
     omnivoiceEndpoint: string;
+    omnivoiceVoiceGender: "male" | "female" | "";
+    omnivoiceSpeakingStyle: string;
+    omnivoiceReferenceAudio: string;
+    omnivoiceReferenceText: string;
 
     ttsConcurrency: number;
 }
@@ -32,6 +37,17 @@ export function loadConfig(): Config {
         ttsProvider: provider,
         omnivoiceEndpoint:
             process.env.OMNIVOICE_ENDPOINT ?? "http://127.0.0.1:8123",
+        omnivoiceVoiceGender:
+            process.env.OMNIVOICE_VOICE_GENDER === "female" ? "female" : "male",
+        omnivoiceSpeakingStyle:
+            process.env.OMNIVOICE_SPEAKING_STYLE ?? "narrator",
+        omnivoiceReferenceAudio: resolve(
+            process.env.OMNIVOICE_REFERENCE_AUDIO ??
+                "assets/voice-reference/vietnamese-male-middle-audio-019.wav",
+        ),
+        omnivoiceReferenceText:
+            process.env.OMNIVOICE_REFERENCE_TEXT ??
+            "Xin chào, mình là Thế Hào. Rất vui vì hôm nay chúng ta lại có dịp ngồi lại với nhau. Trong không gian nhỏ bé, nhưng đầy yêu thương.",
         ttsConcurrency: intDefault("TTS_CONCURRENCY", 1),
     };
 }

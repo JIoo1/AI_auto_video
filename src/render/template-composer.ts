@@ -66,22 +66,22 @@ export async function composeTemplate(args: ComposeArgs): Promise<string> {
     );
     writeFileSync(varsFile, JSON.stringify(inputs), "utf8");
 
+    // SỬA TẠI ĐÂY: Bọc kép các tham số đường dẫn "${...}" để tránh lỗi khoảng trắng trong Windows Shell
     const spawnArgs = [
-        // -y: never prompt to install. Pinned version → deterministic renders.
         "-y",
         "hyperframes@0.6.94",
         "render",
-        templateDir,
+        `"${templateDir}"`,
         "--composition",
         entryFile,
         "--output",
-        outputPath,
+        `"${outputPath}"`,
         "--fps",
         String(fps),
         "--quality",
         quality,
         "--variables-file",
-        varsFile,
+        `"${varsFile}"`,
     ];
 
     log.info(`Compose ${templateId} (${entryFile}) → ${outputPath}`);
@@ -104,8 +104,6 @@ export async function composeTemplate(args: ComposeArgs): Promise<string> {
 }
 
 /** POC entry: `tsx src/render/template-composer.ts` renders sample clips. */
-// pathToFileURL handles Windows backslash paths (a raw `file://${argv[1]}`
-// never matches import.meta.url on win32, silently skipping this block).
 if (
     process.argv[1] &&
     import.meta.url === pathToFileURL(process.argv[1]).href

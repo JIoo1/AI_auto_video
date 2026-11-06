@@ -15,5 +15,11 @@ import type { Config } from "../config.js";
 import { OmniVoiceClient } from "./omnivoice-client.js";
 
 export function createTtsClient(cfg: Config): TtsClient {
-  return new OmniVoiceClient({ endpoint: cfg.omnivoiceEndpoint });
+  return new OmniVoiceClient({
+    endpoint: cfg.omnivoiceEndpoint,
+    voiceGender: cfg.omnivoiceVoiceGender,
+    speakingStyle: cfg.omnivoiceSpeakingStyle,
+    referenceAudioPath: cfg.omnivoiceReferenceAudio,
+    referenceText: cfg.omnivoiceReferenceText,
+  });
 }
